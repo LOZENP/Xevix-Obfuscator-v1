@@ -8,7 +8,7 @@
 ]]--
 
 -- Module paths (change these to your actual paths)
-local MODULE_PATH = "https://github.com/LOZENP/Xevix-Obfuscator-v1"
+local MODULE_PATH = "https://github.com/LOZENP/Xevix-Obfuscator-v1/"  -- Added trailing slash
 
 -- Load modules
 local Lexer = loadstring(game:HttpGet(MODULE_PATH .. "Lexer.lua"))()
