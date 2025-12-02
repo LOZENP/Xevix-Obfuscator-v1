@@ -34,7 +34,8 @@ function Transformer.encryptString(str, key)
     
     for i = 1, #str do
         local byte = string.byte(str, i)
-        table.insert(encrypted, byte ~ key)
+        -- Use bit32.bxor for Roblox Luau compatibility
+        table.insert(encrypted, bit32.bxor(byte, key))
     end
     
     return encrypted
