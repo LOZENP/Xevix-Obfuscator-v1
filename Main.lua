@@ -1,42 +1,49 @@
 --[[
     Main.lua
     Entry point for the modular obfuscator
-    
-    Usage:
-        local Obfuscator = require("Main")
-        local result = Obfuscator.obfuscate(sourceCode, config)
 ]]--
 
--- Module paths (change these to your actual paths)
-local MODULE_PATH = "https://github.com/LOZENP/Xevix-Obfuscator-v1/"  -- Added trailing slash
+local MODULE_PATH = "https://raw.githubusercontent.com/LOZENP/Xevix-Obfuscator-v1/main/"
 
--- Load modules
-local Lexer = loadstring(game:HttpGet(MODULE_PATH .. "Lexer.lua"))()
-local Parser = loadstring(game:HttpGet(MODULE_PATH .. "Parser.lua"))()
-local Transformer = loadstring(game:HttpGet(MODULE_PATH .. "Transformer.lua"))()
-local Generator = loadstring(game:HttpGet(MODULE_PATH .. "Generator.lua"))()
+-- Load modules with error handling
+local function loadModule(name)
+    local url = MODULE_PATH .. name .. ".lua"
+    local success, content = pcall(function()
+        return game:HttpGet(url)
+    end)
+    
+    if not success then
+        error("Failed to download " .. name .. ": " .. tostring(content))
+    end
+    
+    local func, err = loadstring(content)
+    if not func then
+        error("Failed to compile " .. name .. ": " .. tostring(err))
+    end
+    
+    return func()
+end
+
+print("Loading modules...")
+local Lexer = loadModule("Lexer")
+local Parser = loadModule("Parser")
+local Transformer = loadModule("Transformer")
+local Generator = loadModule("Generator")
+print("All modules loaded successfully!")
 
 local Obfuscator = {}
 
--- Default configuration
 Obfuscator.defaultConfig = {
-    -- Transformer options
     renameVariables = true,
     renameFunctions = true,
     encryptStrings = false,
     prefix = "_",
-    
-    -- Generator options
     minify = false,
     watermark = "Obfuscated Script",
-    
-    -- Output options
     verbose = true
 }
 
--- Main obfuscation function
 function Obfuscator.obfuscate(source, userConfig)
-    -- Merge configs
     local config = {}
     for k, v in pairs(Obfuscator.defaultConfig) do
         config[k] = v
@@ -55,7 +62,6 @@ function Obfuscator.obfuscate(source, userConfig)
         print("========================================")
     end
     
-    -- Step 1: Lexical Analysis (Tokenization)
     if config.verbose then
         print("\n[1/4] Lexer: Tokenizing source code...")
     end
@@ -67,7 +73,6 @@ function Obfuscator.obfuscate(source, userConfig)
         print(string.format("  ✓ Generated %d tokens", #tokens))
     end
     
-    -- Step 2: Syntax Analysis (Parsing)
     if config.verbose then
         print("\n[2/4] Parser: Building AST...")
     end
@@ -79,7 +84,6 @@ function Obfuscator.obfuscate(source, userConfig)
         print("  ✓ AST built successfully")
     end
     
-    -- Step 3: Transformation (Obfuscation)
     if config.verbose then
         print("\n[3/4] Transformer: Obfuscating AST...")
         if config.renameVariables then
@@ -99,7 +103,6 @@ function Obfuscator.obfuscate(source, userConfig)
         print("  ✓ AST transformed")
     end
     
-    -- Step 4: Code Generation
     if config.verbose then
         print("\n[4/4] Generator: Generating output...")
     end
@@ -124,7 +127,6 @@ function Obfuscator.obfuscate(source, userConfig)
     return output
 end
 
--- Convenience function for quick obfuscation
 function Obfuscator.quick(source)
     return Obfuscator.obfuscate(source, {
         verbose = false
